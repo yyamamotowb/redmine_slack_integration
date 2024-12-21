@@ -123,7 +123,7 @@ module RedmineSlackIntegration
       data['thread_ts'] = get_slack_thread_ts(issue)
 
       ## Add reply_broadcast
-      data['reply_broadcast'] = true
+      data['reply_broadcast'] = false
 
       ## Add issue updated_on
       data['text'] = "*#{l(:field_updated_on)}:#{issue.updated_on}*"
