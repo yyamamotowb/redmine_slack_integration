@@ -125,8 +125,23 @@ module RedmineSlackIntegration
       ## Add reply_broadcast
       data['reply_broadcast'] = false
 
+
+      ## Add mention
+      ## Add assigned to
+      sui_assigned_to = get_slack_user_id(issue.assigned_to_id, slack_info['token'])
+      data['text'] =""
+      data['text'] = data['text'] + "<@#{sui_assigned_to}>" unless sui_assigned_to.blank?
+
+      ## Add watcher
+      issue.watcher_user_ids.each do |wid|
+        next if issue.assigned_to_id == wid
+        sui_watcher = get_slack_user_id(wid, slack_info['token'])
+        data['text'] = data['text'] + " <@#{sui_watcher}>" unless sui_watcher.blank?
+      end
+      data['text'] = data['text'] + "\n"
+
       ## Add issue updated_on
-      data['text'] = "*#{l(:field_updated_on)}:#{issue.updated_on}*"
+      data['text'] = data['text'] + "*#{l(:field_updated_on)}:#{issue.updated_on.in_time_zone('Asia/Tokyo').strftime('%Y-%m-%d %H:%M:%S')}*"
 
       ## Add issue subject
       subject = issue.subject.gsub(/[　|\s|]+$/, "")
@@ -162,19 +177,6 @@ module RedmineSlackIntegration
       ## Add ```
       data['text'] = data['text'] + "\n```"
 
-      ## Add mention
-      data['text'] = data['text'] + "\n"
-
-      ## Add assigned to
-      sui_assigned_to = get_slack_user_id(issue.assigned_to_id, slack_info['token'])
-      data['text'] = data['text'] + "<@#{sui_assigned_to}>" unless sui_assigned_to.blank?
-
-      ## Add watcher
-      issue.watcher_user_ids.each do |wid|
-        next if issue.assigned_to_id == wid
-        sui_watcher = get_slack_user_id(wid, slack_info['token'])
-        data['text'] = data['text'] + " <@#{sui_watcher}>" unless sui_watcher.blank?
-      end
 
       ## Don't send empty data
       return if details.blank? && issue.notes.blank?
